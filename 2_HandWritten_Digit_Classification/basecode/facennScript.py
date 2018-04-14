@@ -1,8 +1,10 @@
 '''
 Comparing single layer MLP with deep MLP (using TensorFlow)
 '''
-
 import numpy as np
+from scipy.optimize import minimize
+from scipy.io import loadmat
+from math import sqrt
 import pickle
 
 # Do not change this
