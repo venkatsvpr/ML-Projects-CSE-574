@@ -169,9 +169,9 @@ def nnObjFunction(params, *args):
     % w2: matrix of weights of connections from hidden layer to output layers.
     %     w2(i, j) represents the weight of connection from unit j in hidden
     %     layer to unit i in output layer."""
-     
-    n_input, n_hidden, n_class, training_data, training_label, lambdaval = args 
-    
+
+    n_input, n_hidden, n_class, training_data, training_label, lambdaval = args
+
     # Venkat: Set the kth label as 1 . set 0th label 1 for label 0 etc.
     label = np.array(training_label);
     rows = label.shape[0];
@@ -187,28 +187,28 @@ def nnObjFunction(params, *args):
     training_data = np.column_stack((training_data,BiasTerm))
     num_samples = training_data.shape[0]
 
-    # Venkat: find the output using sigmoid    
+    # Venkat: find the output using sigmoid
     HiddenOut = sigmoid(np.dot(training_data,w1.T))
 
-    # Venkat :Add new bias term    
+    # Venkat :Add new bias term
     NewBias = np.ones(HiddenOut.shape[0])
     HiddenOutput = np.column_stack((HiddenOut, NewBias))
-    
+
     # Find the final output using sigmoid
     FinalOutput = sigmoid(np.dot(HiddenOutput,w2.T))
-    
-    
+
+
     # Doing back propagation
     delta_l = FinalOutput - training_label
-    
+
     grad_w2 = np.dot(delta_l.T,HiddenOutput)
-    grad_w1 = np.dot(((1-HiddenOutput)*HiddenOutput* (np.dot(delta_l,w2))).T,training_data)  
-    
-    
+    grad_w1 = np.dot(((1-HiddenOutput)*HiddenOutput* (np.dot(delta_l,w2))).T,training_data)
+
+
     # remove zero rows hidden
     grad_w1 = np.delete(grad_w1, n_hidden,0)
 
-    # obj_grad  
+    # obj_grad
     obj_grad = np.array([])
     obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
     obj_grad = obj_grad/num_samples
@@ -216,9 +216,9 @@ def nnObjFunction(params, *args):
     # obj_val
     obj_val_part1 = np.sum(-1*(training_label*np.log(FinalOutput)+(1-training_label)*np.log(1-FinalOutput)))
     obj_val_part1 = obj_val_part1/num_samples
-    obj_val_part2 = (lambdaval/(2*num_samples))* ( np.sum(np.square(w1)) + np.sum(np.square(w2)))    
+    obj_val_part2 = (lambdaval/(2*num_samples))* ( np.sum(np.square(w1)) + np.sum(np.square(w2)))
     obj_val = obj_val_part1 + obj_val_part2
-    
+
     return (obj_val,obj_grad)
 
 def nnPredict(w1, w2, data):
@@ -237,40 +237,37 @@ def nnPredict(w1, w2, data):
 
     % Output:
     % label: a column vector of predicted labels"""
-   
+
     """% nnPredict predicts the label of data given the parameter w1, w2 of Neural
     % Network.
     % Input:
     % w1: matrix of weights of connections from input layer to hidden layers.
-    %     w1(i, j) represents the weight of connection from unit i in input 
+    %     w1(i, j) represents the weight of connection from unit i in input
     %     layer to unit j in hidden layer.
     % w2: matrix of weights of connections from hidden layer to output layers.
-    %     w2(i, j) represents the weight of connection from unit i in input 
+    %     w2(i, j) represents the weight of connection from unit i in input
     %     layer to unit j in hidden layer.
-    % data: matrix of data. Each row of this matrix represents the feature 
+    % data: matrix of data. Each row of this matrix represents the feature
     %       vector of a particular image
-       
-    % Output: 
-    % label: a column vector of predicted labels""" 
-    n=data.shape[0]    
+
+    % Output:
+    % label: a column vector of predicted labels"""
+    n=data.shape[0]
     Bias = np.zeros([len(data), 1])
     DataWithBias = np.append(data, Bias ,1)
-    print ("np.shape data with bais ",np.shape(DataWithBias)," w1 ",np.shape(w1)," w2 ",np.shape(w2))
-    hidden_input = np.dot(DataWithBias ,w1.T)
-    hidden_output = sigmoid(hidden_input)
-    
-    Bias = np.zeros([len(hidden_output), 1])
-    FinalDataWithBias = np.append(hidden_output, Bias, 1)
-    final_input = np.dot(FinalDataWithBias, w2.T)
-    final_output = sigmoid(final_input)
+    HiddenInput = np.dot(DataWithBias ,w1.T)
+    HiddenOutput = sigmoid(HiddenInput)
+
+    Bias = np.zeros([len(HiddenOutput), 1])
+    FinalDataWithBias = np.append(HiddenOutput, Bias, 1)
+    FinalInput = np.dot(FinalDataWithBias, w2.T)
+    FinalOutput = sigmoid(FinalInput)
     ans=np.empty((0,1))
 
     for i in range(n):
-        index=np.argmax(final_output[i]);
+        index=np.argmax(FinalOutput[i]);
         ans=np.append(ans,index);
     return ans
-
-
 
 """**************Neural Network Script Starts here********************************"""
 
@@ -333,6 +330,3 @@ predicted_label = nnPredict(w1, w2, test_data)
 # find the accuracy on Validation Dataset
 
 print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
-
-
-
