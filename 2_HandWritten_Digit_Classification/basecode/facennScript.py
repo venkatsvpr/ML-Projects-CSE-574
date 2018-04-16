@@ -37,7 +37,7 @@ def nnObjFunction(params, *args):
     label = np.array(training_label);
     rows = label.shape[0];
     rowsIndex =np.array([i for i in range(rows)])
-    training_label = np.zeros((rows,10))
+    training_label = np.zeros((rows,2))
     training_label[rowsIndex,label.astype(int)]=1
 
     w1 = params[0:n_hidden * (n_input + 1)].reshape( (n_hidden, (n_input + 1)))
