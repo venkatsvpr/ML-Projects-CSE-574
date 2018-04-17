@@ -2,7 +2,7 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.io import loadmat
 from math import sqrt
-
+import pickle
 
 def initializeWeights(n_in, n_out):
     """
@@ -209,26 +209,25 @@ def nnObjFunction(params, *args):
     # Doing back propagation
     delta_l = FinalOutput - training_label
 
-    grad_w2 = np.dot(delta_l.T,HiddenOutput)
-    grad_w1 = np.dot(((1-HiddenOutput)*HiddenOutput* (np.dot(delta_l,w2))).T,training_data)
+    Gradient_w2 = np.dot(delta_l.T,HiddenOutput)
+    Gradient_w1 = np.dot(((1-HiddenOutput)*HiddenOutput* (np.dot(delta_l,w2))).T,training_data)
 
 
     # remove zero rows hidden
-    grad_w1 = np.delete(grad_w1, n_hidden,0)
+    Gradient_w1 = np.delete(Gradient_w1, n_hidden,0)
 
-    # obj_val
     # Implementing the formula from the document
-    obj_val_part1 = np.sum(-1*(training_label*np.log(FinalOutput)+(1-training_label)*np.log(1-FinalOutput)))
-    obj_val_part1 = obj_val_part1/num_samples
-    obj_val_part2 = (lambdaval/(2*num_samples))* ( np.sum(np.square(w1)) + np.sum(np.square(w2)))
-    obj_val = obj_val_part1 + obj_val_part2
+    o_part_1 = (np.sum(-1*(training_label*np.log(FinalOutput)+(1-training_label)*np.log(1-FinalOutput))))/num_samples
+    o_part_2 = (lambdaval/(2*num_samples))* ( np.sum(np.square(w1)) + np.sum(np.square(w2)))
 
     # obj_grad 
     obj_grad = np.array([])
 
     # concatenate by the row
-    obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
+    obj_grad = np.concatenate((Gradient_w1.flatten(), Gradient_w2.flatten()),0)
     obj_grad = obj_grad/num_samples
+    
+    obj_val = o_part_1 + o_part_2
     return (obj_val,obj_grad)
 
 def nnPredict(w1, w2, data):
@@ -346,3 +345,6 @@ predicted_label = nnPredict(w1, w2, test_data)
 # find the accuracy on Validation Dataset
 
 print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
+
+pickle.dump((n_hidden,w1,w2,lambdaval),open('params.pickle','wb'))
+
