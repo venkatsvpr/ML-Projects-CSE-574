@@ -33,6 +33,7 @@ def sigmoid(z):
 # Replace this with your nnObjFunction implementation
 def nnObjFunction(params, *args):
     n_input, n_hidden, n_class, training_data, training_label, lambdaval = args
+
     # Venkat: Set the kth label as 1 . set 0th label 1 for label 0 etc.
     label = np.array(training_label);
     rows = label.shape[0];
@@ -69,37 +70,44 @@ def nnObjFunction(params, *args):
     # remove zero rows hidden
     grad_w1 = np.delete(grad_w1, n_hidden,0)
 
-    # obj_grad
-    obj_grad = np.array([])
-    obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
-    obj_grad = obj_grad/num_samples
-
     # obj_val
+    # Implementing the formula from the document
     obj_val_part1 = np.sum(-1*(training_label*np.log(FinalOutput)+(1-training_label)*np.log(1-FinalOutput)))
     obj_val_part1 = obj_val_part1/num_samples
     obj_val_part2 = (lambdaval/(2*num_samples))* ( np.sum(np.square(w1)) + np.sum(np.square(w2)))
     obj_val = obj_val_part1 + obj_val_part2
 
+    # obj_grad 
+    obj_grad = np.array([])
+
+    # concatenate by the row
+    obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
+    obj_grad = obj_grad/num_samples
     return (obj_val,obj_grad)
 
 # Replace this with your nnPredict implementation
 def nnPredict(w1,w2,data):
-    n=data.shape[0]
+    # Number of Items  
+    Num_of_Items=data.shape[0]    
+
+    # Add a bias term
     Bias = np.zeros([len(data), 1])
     DataWithBias = np.append(data, Bias ,1)
-    HiddenInput = np.dot(DataWithBias ,w1.T)
-    HiddenOutput = sigmoid(HiddenInput)
+    
+    hidden_input = np.dot(DataWithBias ,w1.T)
+    hidden_output = sigmoid(hidden_input)
+ 
+    # Second layer - Adding Bias Term   
+    Bias = np.zeros([len(hidden_output), 1])
+    FinalDataWithBias = np.append(hidden_output, Bias, 1)
+    final_input = np.dot(FinalDataWithBias, w2.T)
+    final_output = sigmoid(final_input)
 
-    Bias = np.zeros([len(HiddenOutput), 1])
-    FinalDataWithBias = np.append(HiddenOutput, Bias, 1)
-    FinalInput = np.dot(FinalDataWithBias, w2.T)
-    FinalOutput = sigmoid(FinalInput)
-    ans=np.empty((0,1))
-
-    for i in range(n):
-        index=np.argmax(FinalOutput[i]);
-        ans=np.append(ans,index);
-    return ans
+    #Initialize an dummy output array
+    ListAns = [-1]*Num_of_Items
+    for i in range(Num_of_Items):
+        ListAns[i] = np.argmax(final_output[i]);
+    return np.array(ListAns)
 
 # Do not change this
 def preprocess():

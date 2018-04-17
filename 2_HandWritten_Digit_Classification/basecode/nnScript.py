@@ -127,11 +127,11 @@ def preprocess():
     # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.ptp.html
     for i in range(Number_of_Features):
         # If feature is of no importance in training data
-        if np.ptp(train_data[:,i]) == 0.0:
+        if np.ptp(train_data[:,i]) == 0:
             # if feature is of no importance in validation data
-            if np.ptp(validation_data[:,i]) == 0.0:
+            if np.ptp(validation_data[:,i]) == 0:
                 # same check on test data
-                if np.ptp(test_data[:,i]) == 0.0:
+                if np.ptp(test_data[:,i]) == 0:
                     features_to_delete.append(i)
 
     train_data = np.delete(train_data, features_to_delete, axis=1)
@@ -225,6 +225,7 @@ def nnObjFunction(params, *args):
 
     # obj_grad 
     obj_grad = np.array([])
+
     # concatenate by the row
     obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
     obj_grad = obj_grad/num_samples
