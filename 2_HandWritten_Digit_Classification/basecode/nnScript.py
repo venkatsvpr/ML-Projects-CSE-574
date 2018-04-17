@@ -122,9 +122,17 @@ def preprocess():
 
     features_to_delete = []
     Number_of_Features = np.shape(validation_data)[1]
+    # we have to ignore features that are not of importance to us.  
+    # we use numpy.ptp
+    # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.ptp.html
     for i in range(Number_of_Features):
-        if np.ptp(train_data[:,i]) == 0.0 and np.ptp(validation_data[:,i]) == 0.0:
-                features_to_delete.append(i)
+        # If feature is of no importance in training data
+        if np.ptp(train_data[:,i]) == 0.0:
+            # if feature is of no importance in validation data
+            if np.ptp(validation_data[:,i]) == 0.0:
+                # same check on test data
+                if np.ptp(test_data[:,i]) == 0.0:
+                    features_to_delete.append(i)
 
     train_data = np.delete(train_data, features_to_delete, axis=1)
     validation_data = np.delete(validation_data, features_to_delete, axis=1)
@@ -208,17 +216,18 @@ def nnObjFunction(params, *args):
     # remove zero rows hidden
     grad_w1 = np.delete(grad_w1, n_hidden,0)
 
-    # obj_grad
-    obj_grad = np.array([])
-    obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
-    obj_grad = obj_grad/num_samples
-
     # obj_val
+    # Implementing the formula from the document
     obj_val_part1 = np.sum(-1*(training_label*np.log(FinalOutput)+(1-training_label)*np.log(1-FinalOutput)))
     obj_val_part1 = obj_val_part1/num_samples
     obj_val_part2 = (lambdaval/(2*num_samples))* ( np.sum(np.square(w1)) + np.sum(np.square(w2)))
     obj_val = obj_val_part1 + obj_val_part2
 
+    # obj_grad 
+    obj_grad = np.array([])
+    # concatenate by the row
+    obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
+    obj_grad = obj_grad/num_samples
     return (obj_val,obj_grad)
 
 def nnPredict(w1, w2, data):
@@ -249,25 +258,31 @@ def nnPredict(w1, w2, data):
     %     layer to unit j in hidden layer.
     % data: matrix of data. Each row of this matrix represents the feature
     %       vector of a particular image
+       
+    % Output: 
+    % label: a column vector of predicted labels""" 
+    # Number of Items  
+    Num_of_Items=data.shape[0]    
 
-    % Output:
-    % label: a column vector of predicted labels"""
-    n=data.shape[0]
+    # Add a bias term
     Bias = np.zeros([len(data), 1])
     DataWithBias = np.append(data, Bias ,1)
-    HiddenInput = np.dot(DataWithBias ,w1.T)
-    HiddenOutput = sigmoid(HiddenInput)
+    
+    hidden_input = np.dot(DataWithBias ,w1.T)
+    hidden_output = sigmoid(hidden_input)
+ 
+    # Second layer - Adding Bias Term   
+    Bias = np.zeros([len(hidden_output), 1])
+    FinalDataWithBias = np.append(hidden_output, Bias, 1)
+    final_input = np.dot(FinalDataWithBias, w2.T)
+    final_output = sigmoid(final_input)
 
-    Bias = np.zeros([len(HiddenOutput), 1])
-    FinalDataWithBias = np.append(HiddenOutput, Bias, 1)
-    FinalInput = np.dot(FinalDataWithBias, w2.T)
-    FinalOutput = sigmoid(FinalInput)
-    ans=np.empty((0,1))
+    #Initialize an dummy output array
+    ListAns = [-1]*Num_of_Items
+    for i in range(Num_of_Items):
+        ListAns[i] = np.argmax(final_output[i]);
 
-    for i in range(n):
-        index=np.argmax(FinalOutput[i]);
-        ans=np.append(ans,index);
-    return ans
+    return np.array(ListAns)
 
 """**************Neural Network Script Starts here********************************"""
 
