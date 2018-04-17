@@ -205,13 +205,10 @@ def nnObjFunction(params, *args):
     # Find the final output using sigmoid
     FinalOutput = sigmoid(np.dot(HiddenOutput,w2.T))
 
-
-    # Doing back propagation
-    delta_l = FinalOutput - training_label
-
-    Gradient_w2 = np.dot(delta_l.T,HiddenOutput)
-    Gradient_w1 = np.dot(((1-HiddenOutput)*HiddenOutput* (np.dot(delta_l,w2))).T,training_data)
-
+    # Find the error and then use the formula to find the Gradient and value.
+    Delta = FinalOutput - training_label
+    Gradient_w2 = np.dot(Delta.T,HiddenOutput)
+    Gradient_w1 = np.dot(((1-HiddenOutput)*HiddenOutput* (np.dot(Delta,w2))).T,training_data)
 
     # remove zero rows hidden
     Gradient_w1 = np.delete(Gradient_w1, n_hidden,0)
@@ -223,7 +220,7 @@ def nnObjFunction(params, *args):
     # obj_grad 
     obj_grad = np.array([])
 
-    # concatenate by the row
+    # concatenate
     obj_grad = np.concatenate((Gradient_w1.flatten(), Gradient_w2.flatten()),0)
     obj_grad = obj_grad/num_samples
     

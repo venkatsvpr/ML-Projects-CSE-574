@@ -59,30 +59,26 @@ def nnObjFunction(params, *args):
     # Find the final output using sigmoid
     FinalOutput = sigmoid(np.dot(HiddenOutput,w2.T))
 
-
-    # Doing back propagation
-    delta_l = FinalOutput - training_label
-
-    grad_w2 = np.dot(delta_l.T,HiddenOutput)
-    grad_w1 = np.dot(((1-HiddenOutput)*HiddenOutput* (np.dot(delta_l,w2))).T,training_data)
-
+    # Find the error and then use the formula to find the Gradient and value.
+    Delta = FinalOutput - training_label
+    Gradient_w2 = np.dot(Delta.T,HiddenOutput)
+    Gradient_w1 = np.dot(((1-HiddenOutput)*HiddenOutput* (np.dot(Delta,w2))).T,training_data)
 
     # remove zero rows hidden
-    grad_w1 = np.delete(grad_w1, n_hidden,0)
+    Gradient_w1 = np.delete(Gradient_w1, n_hidden,0)
 
-    # obj_val
     # Implementing the formula from the document
-    obj_val_part1 = np.sum(-1*(training_label*np.log(FinalOutput)+(1-training_label)*np.log(1-FinalOutput)))
-    obj_val_part1 = obj_val_part1/num_samples
-    obj_val_part2 = (lambdaval/(2*num_samples))* ( np.sum(np.square(w1)) + np.sum(np.square(w2)))
-    obj_val = obj_val_part1 + obj_val_part2
+    o_part_1 = (np.sum(-1*(training_label*np.log(FinalOutput)+(1-training_label)*np.log(1-FinalOutput))))/num_samples
+    o_part_2 = (lambdaval/(2*num_samples))* ( np.sum(np.square(w1)) + np.sum(np.square(w2)))
 
     # obj_grad 
     obj_grad = np.array([])
 
-    # concatenate by the row
-    obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
+    # concatenate
+    obj_grad = np.concatenate((Gradient_w1.flatten(), Gradient_w2.flatten()),0)
     obj_grad = obj_grad/num_samples
+    
+    obj_val = o_part_1 + o_part_2
     return (obj_val,obj_grad)
 
 # Replace this with your nnPredict implementation
@@ -107,6 +103,7 @@ def nnPredict(w1,w2,data):
     ListAns = [-1]*Num_of_Items
     for i in range(Num_of_Items):
         ListAns[i] = np.argmax(final_output[i]);
+
     return np.array(ListAns)
 
 # Do not change this
