@@ -32,6 +32,7 @@ def sigmoid(z):
 
 # Replace this with your nnObjFunction implementation
 def nnObjFunction(params, *args):
+
     n_input, n_hidden, n_class, training_data, training_label, lambdaval = args
 
     # Venkat: Set the kth label as 1 . set 0th label 1 for label 0 etc.
@@ -61,29 +62,37 @@ def nnObjFunction(params, *args):
 
     # Find the error and then use the formula to find the Gradient and value.
     Delta = FinalOutput - training_label
+    
+    # Using the formula  shared in handout. 
     Gradient_w2 = np.dot(Delta.T,HiddenOutput)
     Gradient_w1 = np.dot(((1-HiddenOutput)*HiddenOutput* (np.dot(Delta,w2))).T,training_data)
 
     # remove zero rows hidden
+    # np.delete(Gradient_w1 )
     Gradient_w1 = np.delete(Gradient_w1, n_hidden,0)
 
     # Implementing the formula from the document
-    o_part_1 = (np.sum(-1*(training_label*np.log(FinalOutput)+(1-training_label)*np.log(1-FinalOutput))))/num_samples
-    o_part_2 = (lambdaval/(2*num_samples))* ( np.sum(np.square(w1)) + np.sum(np.square(w2)))
-
-    # obj_grad 
-    obj_grad = np.array([])
+    # Find the sum of elements on the axis
+    logFinal = np.log(FinalOutput)
+    logOneFinal  = np.log(1-FinalOutput)
+    o_part_1 = (np.sum(-1*(training_label*logFinal+(1-training_label)*logOneFinal)))
+    o_part_1 = o_part_1/num_samples
+    sw1 = np.sum(np.square(w1))
+    sw2 = np.sum(np.square(w2))
+    o_part_2 = (lambdaval/(2*num_samples))* (sw1 +  sw2)
+    obj_val = o_part_1 + o_part_2
 
     # concatenate
+    # regularization will not impact for lambdaval 0, for others it will
     Gradient_w1 = Gradient_w1 + lambdaval * w1
     Gradient_w2 = Gradient_w2 + lambdaval * w2
+
+    # obj_grad 
+    obj_grad = np.array([])  
     obj_grad = np.concatenate((Gradient_w1.flatten(), Gradient_w2.flatten()),0)
     obj_grad = obj_grad/num_samples
     
-    obj_val = o_part_1 + o_part_2
-    return (obj_val,obj_grad)
-
-# Replace this with your nnPredict implementation
+    return (obj_val,obj_grad)# Replace this with your nnPredict implementation
 def nnPredict(w1,w2,data):
     # Number of Items  
     Num_of_Items=data.shape[0]    
@@ -124,6 +133,7 @@ def preprocess():
     return train_x, train_y, valid_x, valid_y, test_x, test_y
 
 """**************Neural Network Script Starts here********************************"""
+start = time.time()
 train_data, train_label, validation_data, validation_label, test_data, test_label = preprocess()
 #  Train Neural Network
 # set the number of nodes in input unit (not including bias unit)
@@ -161,3 +171,5 @@ print('\n Validation set Accuracy:' + str(100*np.mean((predicted_label == valida
 predicted_label = nnPredict(w1,w2,test_data)
 #find the accuracy on Validation Dataset
 print('\n Test set Accuracy:' +  str(100*np.mean((predicted_label == test_label).astype(float))) + '%')
+end = time.time()
+print('time taken in seconds : '+str(end-start))
