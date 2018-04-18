@@ -221,6 +221,8 @@ def nnObjFunction(params, *args):
     obj_grad = np.array([])
 
     # concatenate
+    Gradient_w1 = Gradient_w1 + lambdaval * w1
+    Gradient_w2 = Gradient_w2 + lambdaval * w2
     obj_grad = np.concatenate((Gradient_w1.flatten(), Gradient_w2.flatten()),0)
     obj_grad = obj_grad/num_samples
     
