@@ -4,6 +4,7 @@ from scipy.io import loadmat
 from math import sqrt
 import pickle
 
+
 def initializeWeights(n_in, n_out):
     """
     # initializeWeights return the random weights for Neural Network given the
@@ -135,6 +136,10 @@ def preprocess():
                 # same check on test data
                 if np.ptp(test_data[:,i]) == 0:
                     features_to_delete.append(i)
+
+    for i in range(Number_of_Features):
+        if (i not in features_to_delete):
+            selected_feature.append(i);
 
     train_data = np.delete(train_data, features_to_delete, axis=1)
     validation_data = np.delete(validation_data, features_to_delete, axis=1)
@@ -297,6 +302,7 @@ def nnPredict(w1, w2, data):
 
 """**************Neural Network Script Starts here********************************"""
 
+selected_feature = []
 train_data, train_label, validation_data, validation_label, test_data, test_label = preprocess()
 
 #  Train Neural Network
@@ -306,6 +312,7 @@ n_input = train_data.shape[1]
 
 # set the number of nodes in hidden unit (not including bias unit)
 n_hidden = 50
+# optimum hidden 25
 
 # set the number of nodes in output unit
 n_class = 10
@@ -319,6 +326,7 @@ initialWeights = np.concatenate((initial_w1.flatten(), initial_w2.flatten()), 0)
 
 # set the regularization hyper-parameter
 lambdaval = 0
+# optimum lambda 30
 
 args = (n_input, n_hidden, n_class, train_data, train_label, lambdaval)
 
@@ -357,5 +365,5 @@ predicted_label = nnPredict(w1, w2, test_data)
 
 print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
 
-pickle.dump((n_hidden,w1,w2,lambdaval),open('params.pickle','wb'))
+pickle.dump((selected_feature,n_hidden,w1,w2,lambdaval),open('params.pickle','wb'))
 
