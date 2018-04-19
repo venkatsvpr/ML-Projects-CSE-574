@@ -6,7 +6,7 @@ from scipy.optimize import minimize
 from scipy.io import loadmat
 from math import sqrt
 import pickle
-
+import time
 # Do not change this
 def initializeWeights(n_in,n_out):
     """
