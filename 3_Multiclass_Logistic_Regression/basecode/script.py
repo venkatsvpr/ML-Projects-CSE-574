@@ -2,6 +2,7 @@ import numpy as np
 from scipy.io import loadmat
 from scipy.optimize import minimize
 
+from sklearn.svm import SVC
 
 def preprocess():
     """ 
@@ -104,18 +105,35 @@ def blrObjFunction(initialWeights, *args):
                     error function
     """
     train_data, labeli = args
-
     n_data = train_data.shape[0]
     n_features = train_data.shape[1]
-    error = 0
-    error_grad = np.zeros((n_features + 1, 1))
 
-    ##################
-    # YOUR CODE HERE #
-    ##################
-    # HINT: Do not forget to add the bias term to your input data
+    BiasTerm = np.ones((train_data.shape[0],1))
+    InputWithBias = np.column_stack((BiasTerm, train_data))
 
-    return error, error_grad
+    Theta = np.zeros((InputWithBias.shape[0],1))
+    
+    W = initialWeights.reshape(InputWithBias.shape[1],1)
+    
+    Theta = sigmoid(np.dot(InputWithBias,W))
+    LogTheta = np.log(Theta)
+ 
+    y=np.dot(labeli.transpose(),LogTheta)
+ 
+    part1 =  np.dot(labeli.transpose(), LogTheta)
+    part2 = np.dot(np.subtract(1.0,labeli).transpose(), np.log(np.subtract(1.0,Theta)))
+    error = np.sum(part1 + part2)
+    error = (-error)/InputWithBias.shape[0]
+   
+    error_grad = np.zeros((InputWithBias.shape[0], 1))       
+    part3 = np.zeros((InputWithBias.shape[0],1))
+    part3 = np.subtract(Theta,labeli)
+
+    error_grad = np.dot(InputWithBias.transpose(), part3)
+    error_grad=error_grad/InputWithBias.shape[0]
+
+    return error, error_grad.flatten()
+
 
 
 def blrPredict(W, data):
@@ -134,14 +152,15 @@ def blrPredict(W, data):
 
     """
     label = np.zeros((data.shape[0], 1))
+    BiasTerm = np.ones((data.shape[0],1))
+    InputWithBias = np.column_stack((BiasTerm, data))
 
-    ##################
-    # YOUR CODE HERE #
-    ##################
-    # HINT: Do not forget to add the bias term to your input data
+    All_Labels = np.zeros((InputWithBias.shape[0],10))
+    All_Labels = sigmoid(np.dot(InputWithBias,W))
 
+    label = np.argmax(All_Labels, axis =1)
+    label = label.reshape(data.shape[0],1)
     return label
-
 
 def mlrObjFunction(params, *args):
     """
@@ -241,10 +260,68 @@ print('\n Testing set Accuracy:' + str(100 * np.mean((predicted_label == test_la
 Script for Support Vector Machine
 """
 
-print('\n\n--------------SVM-------------------\n\n')
-##################
-# YOUR CODE HERE #
-##################
+print('SVM\nLinear Kernel');
+train_label = np.squeeze(train_label)
+clf = SVC(kernel = 'linear')
+clf.fit(train_data, train_label)
+print("Training Accuracy:   ",clf.score(train_data, train_label))
+print("Test Accuracy:       ",clf.score(test_data, test_label))
+print("Validation Accuracy: ",clf.score(validation_data, validation_label))
+
+print ("\n\nGamma\n");
+clf = SVC(gamma = 1)
+clf.fit(train_data, train_label)
+print("Training Accuracy:   ",clf.score(train_data, train_label))
+print("Test Accuracy:       ", clf.score(test_data, test_label))
+print("Validation Accuracy: ",clf.score(validation_data, validation_label))
+
+print ("\n\nRBF Kernel \n");
+clf = SVC(kernel = 'rbf')
+clf.fit(train_data, train_label)
+print("Training Accuracy:   ",clf.score(train_data, train_label))
+print("Test Accuracy:       ", clf.score(test_data, test_label))
+print("Validation Accuracy: ",clf.score(validation_data, validation_label))
+
+##Code for plotting the graph of accuracy with respect to varying C values
+#
+#vector = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] #C values stored in a vector
+#vectorTrain = []
+#vectorTest = []
+#vectorValidate = []
+#
+#for i in vector:
+#    train_label = np.squeeze(train_label)
+#    clf = SVC(C = i)
+#    print("Doing for C: ",i)
+#    clf.fit(train_data, train_label)
+#    print("Done fitting")
+#    accuracy_train = clf.score(train_data, train_label)
+#    print("accuracy of train: ",accuracy_train)
+#    accuracy_test = clf.score(test_data, test_label)
+#    print("accuracy of test: ",accuracy_test)
+#    accuracy_validation = clf.score(validation_data, validation_label)
+#    print("accuracy of validation: ",accuracy_validation)
+#    vectorTrain.append(accuracy_train)
+#    vectorTest.append(accuracy_test)
+#    vectorValidate.append(accuracy_validation)
+#    print("\n-------------------------------\n")
+#
+#
+#vectorTrain_new = [i * 100 for i in vectorTrain]  #Converted accuracy into percentage
+#vectorTest_new = [i * 100 for i in vectorTest]
+#vectorValidate_new = [i * 100 for i in vectorValidate]
+#
+#accuracyMatrix = np.column_stack((vectorTrain_new, vectorTest_new, vectorValidate_new))
+#    
+#fig = plt.figure(figsize=[12,6])
+#plt.subplot(1, 2, 1)
+#plt.plot(vector,accuracyMatrix)
+#plt.title('Accuracy with varying values of C')
+#plt.legend(('Testing data','Training data', 'Validation data'), loc = 'best') 
+#plt.xlabel('C values')
+#plt.ylabel('Accuracy in %') 
+#plt.show()
+#
 
 
 """
@@ -253,7 +330,7 @@ Script for Extra Credit Part
 # FOR EXTRA CREDIT ONLY
 W_b = np.zeros((n_feature + 1, n_class))
 initialWeights_b = np.zeros((n_feature + 1, n_class))
-opts_b = {'maxiter': 100}
+opts_b = {'maxiter': 1}
 
 args_b = (train_data, Y)
 nn_params = minimize(mlrObjFunction, initialWeights_b, jac=True, args=args_b, method='CG', options=opts_b)
