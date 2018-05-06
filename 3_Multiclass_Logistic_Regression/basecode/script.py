@@ -178,18 +178,32 @@ def mlrObjFunction(params, *args):
         error_grad: the vector of size (D+1) x 10 representing the gradient of
                     error function
     """
-    n_data = train_data.shape[0]
-    n_feature = train_data.shape[1]
+ 
+    train_data,labeli=args
+    N = train_data.shape[0]
+    D = train_data.shape[1]
     error = 0
-    error_grad = np.zeros((n_feature + 1, n_class))
+    error_grad = np.zeros((D + 1, n_class))
 
-    ##################
-    # YOUR CODE HERE #
-    ##################
-    # HINT: Do not forget to add the bias term to your input data
-
-    return error, error_grad
-
+    initialWeights=params[:].reshape((D+1,n_class))
+    train_data_new=np.ones((N,1),dtype = np.float64)
+    train_data = np.concatenate((train_data_new, train_data), axis = 1)
+    WTransX=np.dot(train_data,initialWeights)
+    expWTransX=np.exp(WTransX)
+    sumexpWTransX=np.sum(expWTransX,axis=1)
+    sumexpWTransX = sumexpWTransX.reshape(N,1)
+    softmax=expWTransX/sumexpWTransX
+    logsm=np.log(softmax)
+    ce=labeli*logsm
+    ce=ce*(-1)
+    ce1=np.sum(ce,axis=0)
+    ce2=np.sum(ce1)
+    error=ce2
+    eg=softmax-labeli
+    error_grad=np.dot(eg.transpose(),train_data)
+    error_grad=error_grad.transpose()
+    error_grad=error_grad/N
+    return error, error_grad.flatten()
 
 def mlrPredict(W, data):
     """
@@ -206,13 +220,19 @@ def mlrPredict(W, data):
          corresponding feature vector given in data matrix
 
     """
-    label = np.zeros((data.shape[0], 1))
+    Number_of_Samples = data.shape[0]
+    label = np.zeros((Number_of_Samples, 1))
 
-    ##################
-    # YOUR CODE HERE #
-    ##################
-    # HINT: Do not forget to add the bias term to your input data
+    BiasTerm = np.ones((Number_of_Samples,1))
+    DataWithBias = np.concatenate((BiasTerm, data), axis = 1)
 
+    EstimateLabels = np.zeros((Number_of_Samples,10))
+    " Find WT X"
+    EstimateLabels = sigmoid(np.dot(DataWithBias, W))
+    " Find the max of the all the possiblities"
+    label = np.argmax(EstimateLabels,axis=1)
+    " Reshape it to a N*1 "
+    label = label.reshape(Number_of_Samples,1)
     return label
 
 
@@ -235,53 +255,54 @@ for i in range(n_class):
     Y[:, i] = (train_label == i).astype(int).ravel()
 
 # Logistic Regression with Gradient Descent
-W = np.zeros((n_feature + 1, n_class))
-initialWeights = np.zeros((n_feature + 1, 1))
-opts = {'maxiter': 100}
-for i in range(n_class):
-    labeli = Y[:, i].reshape(n_train, 1)
-    args = (train_data, labeli)
-    nn_params = minimize(blrObjFunction, initialWeights, jac=True, args=args, method='CG', options=opts)
-    W[:, i] = nn_params.x.reshape((n_feature + 1,))
-
-# Find the accuracy on Training Dataset
-predicted_label = blrPredict(W, train_data)
-print('\n Training set Accuracy:' + str(100 * np.mean((predicted_label == train_label).astype(float))) + '%')
-
-# Find the accuracy on Validation Dataset
-predicted_label = blrPredict(W, validation_data)
-print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label == validation_label).astype(float))) + '%')
-
-# Find the accuracy on Testing Dataset
-predicted_label = blrPredict(W, test_data)
-print('\n Testing set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
-
+#W = np.zeros((n_feature + 1, n_class))
+#initialWeights = np.zeros((n_feature + 1, 1))
+#opts = {'maxiter': 100}
+#for i in range(n_class):
+#    labeli = Y[:, i].reshape(n_train, 1)
+#    args = (train_data, labeli)
+#    nn_params = minimize(blrObjFunction, initialWeights, jac=True, args=args, method='CG', options=opts)
+#    W[:, i] = nn_params.x.reshape((n_feature + 1,))
+#
+## Find the accuracy on Training Dataset
+#predicted_label = blrPredict(W, train_data)
+#print('\n Training set Accuracy:' + str(100 * np.mean((predicted_label == train_label).astype(float))) + '%')
+#
+## Find the accuracy on Validation Dataset
+#predicted_label = blrPredict(W, validation_data)
+#print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label == validation_label).astype(float))) + '%')
+#
+## Find the accuracy on Testing Dataset
+#predicted_label = blrPredict(W, test_data)
+#print('\n Testing set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
+#
 """
 Script for Support Vector Machine
 """
 
-print('SVM\nLinear Kernel');
-train_label = np.squeeze(train_label)
-clf = SVC(kernel = 'linear')
-clf.fit(train_data, train_label)
-print("Training Accuracy:   ",clf.score(train_data, train_label))
-print("Test Accuracy:       ",clf.score(test_data, test_label))
-print("Validation Accuracy: ",clf.score(validation_data, validation_label))
+#print('SVM\nLinear Kernel');
+#train_label = np.squeeze(train_label)
+#clf = SVC(kernel = 'linear')
+#clf.fit(train_data, train_label)
+#print("Training Accuracy:   ",clf.score(train_data, train_label))
+#print("Test Accuracy:       ",clf.score(test_data, test_label))
+#print("Validation Accuracy: ",clf.score(validation_data, validation_label))
+#
+#print ("\n\nGamma\n");
+#clf = SVC(gamma = 1)
+#clf.fit(train_data, train_label)
+#print("Training Accuracy:   ",clf.score(train_data, train_label))
+#print("Test Accuracy:       ", clf.score(test_data, test_label))
+#print("Validation Accuracy: ",clf.score(validation_data, validation_label))
+#
+#print ("\n\nRBF Kernel \n");
+#clf = SVC(kernel = 'rbf')
+#clf.fit(train_data, train_label)
+#print("Training Accuracy:   ",clf.score(train_data, train_label))
+#print("Test Accuracy:       ", clf.score(test_data, test_label))
+#print("Validation Accuracy: ",clf.score(validation_data, validation_label))
 
-print ("\n\nGamma\n");
-clf = SVC(gamma = 1)
-clf.fit(train_data, train_label)
-print("Training Accuracy:   ",clf.score(train_data, train_label))
-print("Test Accuracy:       ", clf.score(test_data, test_label))
-print("Validation Accuracy: ",clf.score(validation_data, validation_label))
-
-print ("\n\nRBF Kernel \n");
-clf = SVC(kernel = 'rbf')
-clf.fit(train_data, train_label)
-print("Training Accuracy:   ",clf.score(train_data, train_label))
-print("Test Accuracy:       ", clf.score(test_data, test_label))
-print("Validation Accuracy: ",clf.score(validation_data, validation_label))
-
+#
 ##Code for plotting the graph of accuracy with respect to varying C values
 #
 #vector = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] #C values stored in a vector
