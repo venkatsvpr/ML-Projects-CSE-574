@@ -269,14 +269,14 @@ for i in cvalues:
 
 accuracyMatrix = np.column_stack((TrainingAccuracy, TestAccuracy, ValidationAccuracy))
 
-fig = plt.figure(figsize=[12,6])
-plt.subplot(1, 2, 1)
-plt.plot(vector,accuracyMatrix)
-plt.title('Accuracy with varying values of C')
-plt.legend(('Testing data','Training data', 'Validation data'), loc = 'best')
-plt.xlabel('C values')
-plt.ylabel('Accuracy in %')
-plt.show()
+#fig = plt.figure(figsize=[12,6])
+#plt.subplot(1, 2, 1)
+#plt.plot(vector,accuracyMatrix)
+#plt.title('Accuracy with varying values of C')
+#plt.legend(('Testing data','Training data', 'Validation data'), loc = 'best')
+#plt.xlabel('C values')
+#plt.ylabel('Accuracy in %')
+#plt.show()
 
 
 
@@ -304,3 +304,6 @@ print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label_b == va
 # Find the accuracy on Testing Dataset
 predicted_label_b = mlrPredict(W_b, test_data)
 print('\n Testing set Accuracy:' + str(100 * np.mean((predicted_label_b == test_label).astype(float))) + '%')
+
+
+
