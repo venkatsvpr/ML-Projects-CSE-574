@@ -278,8 +278,6 @@ accuracyMatrix = np.column_stack((TrainingAccuracy, TestAccuracy, ValidationAccu
 #plt.ylabel('Accuracy in %')
 #plt.show()
 
-
-
 """
 Script for Extra Credit Part
 """
@@ -304,6 +302,3 @@ print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label_b == va
 # Find the accuracy on Testing Dataset
 predicted_label_b = mlrPredict(W_b, test_data)
 print('\n Testing set Accuracy:' + str(100 * np.mean((predicted_label_b == test_label).astype(float))) + '%')
-
-
-
